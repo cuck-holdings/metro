@@ -465,7 +465,7 @@ func New(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
-	anteHandler, err := ante.NewAnteHandler(
+	anteDecorators, err := NewAnteDecorators(
 		ante.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
@@ -477,7 +477,7 @@ func New(
 	if err != nil {
 		panic(err)
 	}
-	app.SetAnteHandler(anteHandler)
+	app.SetAnteHandler(sdk.ChainAnteDecorators(anteDecorators...))
 	app.setPostHanders()
 
 	if loadLatest {
