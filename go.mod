@@ -23,8 +23,9 @@ require (
 )
 
 require (
-	github.com/cosmos/cosmos-sdk v0.46.6-alpha2
-	github.com/tendermint/tendermint v0.37.0-rc2
+	cosmossdk.io/math v1.0.0-beta.4
+	github.com/cosmos/cosmos-sdk v0.46.6
+	github.com/tendermint/tendermint v0.34.23
 )
 
 require (
@@ -34,7 +35,6 @@ require (
 	cloud.google.com/go/iam v0.7.0 // indirect
 	cloud.google.com/go/storage v1.27.0 // indirect
 	cosmossdk.io/errors v1.0.0-beta.7 // indirect
-	cosmossdk.io/math v1.0.0-beta.4 // indirect
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect
@@ -166,5 +166,5 @@ require (
 replace (
 	github.com/cosmos/cosmos-sdk => github.com/celestiaorg/cosmos-sdk v1.5.1-sdk-v0.46.6
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/tendermint/tendermint => github.com/celestiaorg/celestia-core v1.12.1-tm-v0.34.23
+	github.com/tendermint/tendermint => github.com/histolabs/tendermint v0.0.0-20221227204023-ec49dd7d580f
 )
