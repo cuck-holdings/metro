@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
@@ -92,7 +93,7 @@ const (
 	DisplayDenom = "TICK"
 )
 
-func NativeDenom(amount sdk.Int) sdk.Coin {
+func NativeDenom(amount sdkmath.Int) sdk.Coin {
 	return sdk.NewCoin(BondDenom, amount)
 }
 
@@ -592,8 +593,8 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 }
 
-func (a *App) RegisterNodeService(clientCtx client.Context) {
-	nodeservice.RegisterNodeService(clientCtx, a.GRPCQueryRouter())
+func (app *App) RegisterNodeService(clientCtx client.Context) {
+	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
