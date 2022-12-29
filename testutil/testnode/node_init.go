@@ -20,8 +20,8 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/histolabs/metro/app"
 	"github.com/histolabs/metro/app/encoding"
+	"github.com/histolabs/metro/pkg/consts"
 	"github.com/tendermint/tendermint/config"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -130,7 +130,7 @@ func createValidator(
 	createValMsg, err := stakingtypes.NewMsgCreateValidator(
 		sdk.ValAddress(addr),
 		pubKey,
-		sdk.NewCoin(app.BondDenom, sdk.NewInt(100000000)),
+		sdk.NewCoin(consts.BondDenom, sdk.NewInt(100000000)),
 		stakingtypes.NewDescription("test", "", "", "", ""),
 		stakingtypes.NewCommissionRates(commission, sdk.OneDec(), sdk.OneDec()),
 		sdk.OneInt(),
@@ -142,7 +142,7 @@ func createValidator(
 	}
 
 	memo := fmt.Sprintf("%s@%s:%s", nodeID, p2pURL.Hostname(), p2pURL.Port())
-	fee := sdk.NewCoins(sdk.NewCoin(app.BondDenom, sdk.NewInt(1)))
+	fee := sdk.NewCoins(sdk.NewCoin(consts.BondDenom, sdk.NewInt(1)))
 	txBuilder := encCfg.TxConfig.NewTxBuilder()
 	err = txBuilder.SetMsgs(createValMsg)
 	if err != nil {

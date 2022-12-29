@@ -15,6 +15,7 @@ import (
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/histolabs/metro/app/encoding"
+	"github.com/histolabs/metro/pkg/consts"
 	"google.golang.org/grpc"
 )
 
@@ -33,7 +34,7 @@ type KeyringSigner struct {
 
 // NewKeyringSigner returns a new KeyringSigner using the provided keyring
 func NewKeyringSigner(encCfg encoding.Config, ring keyring.Keyring, name string, chainID string) *KeyringSigner {
-	ids := strings.SplitN(chainID, "|", 2)
+	ids := strings.SplitN(chainID, consts.ChainIDSeparator, 2)
 	secondaryChainID := ""
 	if len(ids) > 1 {
 		secondaryChainID = ids[1]

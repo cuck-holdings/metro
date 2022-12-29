@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	"github.com/histolabs/metro/app"
 	"github.com/histolabs/metro/app/encoding"
+	"github.com/histolabs/metro/pkg/consts"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -120,7 +121,7 @@ func initAppConfig() (string, interface{}) {
 	// snapshots to nodes that state sync
 	srvCfg.StateSync.SnapshotInterval = 1500
 	srvCfg.StateSync.SnapshotKeepRecent = 2
-	srvCfg.MinGasPrices = fmt.Sprintf("0.001%s", app.BondDenom)
+	srvCfg.MinGasPrices = fmt.Sprintf("0.001%s", consts.BondDenom)
 
 	CelestiaAppCfg := CustomAppConfig{Config: *srvCfg}
 

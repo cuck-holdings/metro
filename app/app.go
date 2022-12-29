@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
@@ -80,39 +79,25 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/histolabs/metro/app/encoding"
+	"github.com/histolabs/metro/pkg/consts"
 )
-
-const (
-	AccountAddressPrefix = "metro"
-	Name                 = "metro"
-	// BondDenom defines the native staking token denomination.
-	BondDenom = "utick"
-	// BondDenomAlias defines an alias for BondDenom.
-	BondDenomAlias = "microtick"
-	// DisplayDenom defines the name, symbol, and display value of the Celestia token.
-	DisplayDenom = "TICK"
-)
-
-func NativeDenom(amount sdkmath.Int) sdk.Coin {
-	return sdk.NewCoin(BondDenom, amount)
-}
 
 // These constants are derived from the above variables.
 // These are the ones we will want to use in the code, based on
 // any overrides above.
 var (
 	// Bech32PrefixAccAddr defines the Bech32 prefix of an account's address.
-	Bech32PrefixAccAddr = AccountAddressPrefix
+	Bech32PrefixAccAddr = consts.AccountAddressPrefix
 	// Bech32PrefixAccPub defines the Bech32 prefix of an account's public key.
-	Bech32PrefixAccPub = AccountAddressPrefix + sdk.PrefixPublic
+	Bech32PrefixAccPub = consts.AccountAddressPrefix + sdk.PrefixPublic
 	// Bech32PrefixValAddr defines the Bech32 prefix of a validator's operator address.
-	Bech32PrefixValAddr = AccountAddressPrefix + sdk.PrefixValidator + sdk.PrefixOperator
+	Bech32PrefixValAddr = consts.AccountAddressPrefix + sdk.PrefixValidator + sdk.PrefixOperator
 	// Bech32PrefixValPub defines the Bech32 prefix of a validator's operator public key.
-	Bech32PrefixValPub = AccountAddressPrefix + sdk.PrefixValidator + sdk.PrefixOperator + sdk.PrefixPublic
+	Bech32PrefixValPub = consts.AccountAddressPrefix + sdk.PrefixValidator + sdk.PrefixOperator + sdk.PrefixPublic
 	// Bech32PrefixConsAddr defines the Bech32 prefix of a consensus node address.
-	Bech32PrefixConsAddr = AccountAddressPrefix + sdk.PrefixValidator + sdk.PrefixConsensus
+	Bech32PrefixConsAddr = consts.AccountAddressPrefix + sdk.PrefixValidator + sdk.PrefixConsensus
 	// Bech32PrefixConsPub defines the Bech32 prefix of a consensus node public key.
-	Bech32PrefixConsPub = AccountAddressPrefix + sdk.PrefixValidator + sdk.PrefixConsensus + sdk.PrefixPublic
+	Bech32PrefixConsPub = consts.AccountAddressPrefix + sdk.PrefixValidator + sdk.PrefixConsensus + sdk.PrefixPublic
 )
 
 var (
@@ -170,7 +155,7 @@ func init() {
 		panic(err)
 	}
 
-	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
+	DefaultNodeHome = filepath.Join(userHomeDir, "."+consts.Name)
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -234,7 +219,7 @@ func New(
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
-	bApp := baseapp.NewBaseApp(Name, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
+	bApp := baseapp.NewBaseApp(consts.Name, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)

@@ -19,6 +19,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/histolabs/metro/app"
 	"github.com/histolabs/metro/app/encoding"
+	"github.com/histolabs/metro/pkg/consts"
 	"github.com/histolabs/metro/testutil/testfactory"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -125,7 +126,7 @@ func AddGenesisAccount(addr sdk.AccAddress, appState app.GenesisState, cdc codec
 
 	coins := sdk.Coins{
 		sdk.NewCoin("token", sdk.NewInt(1000000)),
-		sdk.NewCoin(app.BondDenom, sdk.NewInt(1000000)),
+		sdk.NewCoin(consts.BondDenom, sdk.NewInt(1000000)),
 	}
 
 	balances := banktypes.Balance{Address: addr.String(), Coins: coins.Sort()}
@@ -200,7 +201,7 @@ func GenesisStateWithSingleValidator(testApp *app.App, genAccounts ...string) (a
 	balances := make([]banktypes.Balance, 0, len(genAccounts)+1)
 	balances = append(balances, banktypes.Balance{
 		Address: acc.GetAddress().String(),
-		Coins:   sdk.NewCoins(sdk.NewCoin(app.BondDenom, sdk.NewInt(100000000000000))),
+		Coins:   sdk.NewCoins(sdk.NewCoin(consts.BondDenom, sdk.NewInt(100000000000000))),
 	})
 
 	kr, fundedBankAccs, fundedAuthAccs := testfactory.FundKeyringAccounts(testApp.AppCodec(), genAccounts...)
@@ -267,13 +268,13 @@ func genesisStateWithValSet(
 
 	for range delegations {
 		// add delegated tokens to total supply
-		totalSupply = totalSupply.Add(sdk.NewCoin(app.BondDenom, bondAmt))
+		totalSupply = totalSupply.Add(sdk.NewCoin(consts.BondDenom, bondAmt))
 	}
 
 	// add bonded amount to bonded pool module account
 	balances = append(balances, banktypes.Balance{
 		Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
-		Coins:   sdk.Coins{sdk.NewCoin(app.BondDenom, bondAmt)},
+		Coins:   sdk.Coins{sdk.NewCoin(consts.BondDenom, bondAmt)},
 	})
 
 	// update total supply
