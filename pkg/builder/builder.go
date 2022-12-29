@@ -2,6 +2,8 @@ package builder
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"sync"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -20,29 +22,37 @@ import (
 type KeyringSigner struct {
 	keyring.Keyring
 	keyringAccName string
-	accountNumber  uint64
-	sequence       uint64
-	chainID        string
-	encCfg         encoding.Config
+
+	chainID          string
+	secondaryChainID string
+	encCfg           encoding.Config
 
 	sync.RWMutex
+	acc authtypes.AccountI
 }
 
 // NewKeyringSigner returns a new KeyringSigner using the provided keyring
 func NewKeyringSigner(encCfg encoding.Config, ring keyring.Keyring, name string, chainID string) *KeyringSigner {
+	ids := strings.SplitN(chainID, "|", 2)
+	secondaryChainID := ""
+	if len(ids) > 1 {
+		secondaryChainID = ids[1]
+	}
+
 	return &KeyringSigner{
-		Keyring:        ring,
-		keyringAccName: name,
-		chainID:        chainID,
-		encCfg:         encCfg,
+		Keyring:          ring,
+		keyringAccName:   name,
+		chainID:          chainID,
+		secondaryChainID: secondaryChainID,
+		encCfg:           encCfg,
 	}
 }
 
-// QueryAccountNumber queries the application to find the latest account number and
-// sequence, updating the respective internal fields. The internal account number must
-// be set by this method or by manually calling k.SetAccountNumber in order for any built
-// transactions to be valid
-func (k *KeyringSigner) QueryAccountNumber(ctx context.Context, conn *grpc.ClientConn) error {
+// Update queries the application to find the latest account number and
+// sequence, updating the respective internal fields. The internal account
+// number must be set by this method or by manually calling k.SetAccountNumber
+// in order for any built transactions to be valid
+func (k *KeyringSigner) UpdateAccount(ctx context.Context, conn *grpc.ClientConn) error {
 	info, err := k.Key(k.keyringAccName)
 	if err != nil {
 		return err
@@ -53,15 +63,14 @@ func (k *KeyringSigner) QueryAccountNumber(ctx context.Context, conn *grpc.Clien
 		return err
 	}
 
-	accNum, seqNumb, err := QueryAccount(ctx, conn, k.encCfg, addr.String())
+	acc, err := QueryAccount(ctx, conn, k.encCfg, addr.String())
 	if err != nil {
 		return err
 	}
 	k.Lock()
 	defer k.Unlock()
 
-	k.accountNumber = accNum
-	k.sequence = seqNumb
+	k.acc = acc
 	return nil
 }
 
@@ -96,9 +105,12 @@ func (k *KeyringSigner) NewTxBuilder(opts ...TxBuilderOption) sdkclient.TxBuilde
 // BuildSignedTx creates and signs a sdk.Tx that contains the provided message. The interal
 // account number must be set by calling k.QueryAccountNumber or by manually setting it via
 // k.SetAccountNumber for the built transactions to be valid.
-func (k *KeyringSigner) BuildSignedTx(builder sdkclient.TxBuilder, msg ...sdktypes.Msg) (authsigning.Tx, error) {
+func (k *KeyringSigner) BuildSignedTx(builder sdkclient.TxBuilder, isSecondary bool, msg ...sdktypes.Msg) (authsigning.Tx, error) {
 	k.RLock()
-	sequence := k.sequence
+	sequence := k.acc.GetSequence()
+	if isSecondary {
+		sequence = k.acc.GetSecondarySequence(k.secondaryChainID)
+	}
 	k.RUnlock()
 
 	// set the msg
@@ -135,7 +147,7 @@ func (k *KeyringSigner) BuildSignedTx(builder sdkclient.TxBuilder, msg ...sdktyp
 		return nil, err
 	}
 
-	signerData, err := k.GetSignerData()
+	signerData, err := k.GetSignerData(isSecondary)
 	if err != nil {
 		return nil, err
 	}
@@ -182,19 +194,27 @@ func (k *KeyringSigner) BuildSignedTx(builder sdkclient.TxBuilder, msg ...sdktyp
 }
 
 // SetAccountNumber manually sets the underlying account number
-func (k *KeyringSigner) SetAccountNumber(n uint64) {
+func (k *KeyringSigner) SetAccountNumber(n uint64) error {
 	k.Lock()
 	defer k.Unlock()
 
-	k.accountNumber = n
+	return k.acc.SetAccountNumber(n)
 }
 
 // SetSequence manually sets the underlying sequence number
-func (k *KeyringSigner) SetSequence(n uint64) {
+func (k *KeyringSigner) SetSequence(n uint64) error {
 	k.Lock()
 	defer k.Unlock()
 
-	k.sequence = n
+	return k.acc.SetSequence(n)
+}
+
+// SetSecondarySequence manually sets the underlying secondary sequence number
+func (k *KeyringSigner) SetSecondarySequence(id string, n uint64) error {
+	k.Lock()
+	defer k.Unlock()
+
+	return k.acc.SetSecondarySequence(id, n)
 }
 
 // SetKeyringAccName manually sets the underlying keyring account name
@@ -212,10 +232,18 @@ func (k *KeyringSigner) GetSignerInfo() *keyring.Record {
 	return info
 }
 
-func (k *KeyringSigner) GetSignerData() (authsigning.SignerData, error) {
+func (k *KeyringSigner) GetSignerData(isSecondary bool) (authsigning.SignerData, error) {
 	k.RLock()
-	accountNumber := k.accountNumber
-	sequence := k.sequence
+	accountNumber := k.acc.GetAccountNumber()
+	sequence := k.acc.GetSequence()
+	if isSecondary {
+		if k.secondaryChainID == "" {
+			k.RUnlock()
+			return authsigning.SignerData{}, errors.New("no secondary chain-id set for secondary tx")
+		}
+		accountNumber = 0
+		sequence = k.acc.GetSecondarySequence(k.secondaryChainID)
+	}
 	k.RUnlock()
 
 	record, err := k.Key(k.keyringAccName)
@@ -258,22 +286,21 @@ func BroadcastTx(ctx context.Context, conn *grpc.ClientConn, mode tx.BroadcastMo
 }
 
 // QueryAccount fetches the account number and sequence number from the celestia-app node.
-func QueryAccount(ctx context.Context, conn *grpc.ClientConn, encCfg encoding.Config, address string) (accNum uint64, seqNum uint64, err error) {
+func QueryAccount(ctx context.Context, conn *grpc.ClientConn, encCfg encoding.Config, address string) (authtypes.AccountI, error) {
 	qclient := authtypes.NewQueryClient(conn)
 	resp, err := qclient.Account(
 		ctx,
 		&authtypes.QueryAccountRequest{Address: address},
 	)
 	if err != nil {
-		return accNum, seqNum, err
+		return nil, err
 	}
 
 	var acc authtypes.AccountI
 	err = encCfg.InterfaceRegistry.UnpackAny(resp.Account, &acc)
 	if err != nil {
-		return accNum, seqNum, err
+		return nil, err
 	}
 
-	accNum, seqNum = acc.GetAccountNumber(), acc.GetSequence()
-	return
+	return acc, nil
 }

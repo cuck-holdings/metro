@@ -534,8 +534,8 @@ github.com/hashicorp/memberlist v0.1.3/go.mod h1:ajVTdAv/9Im8oMAAj5G31PhhMCZJV2p
 github.com/hashicorp/serf v0.8.2/go.mod h1:6hOLApaqBFA1NXqRQAsxw9QxuDEvNxSQRwA/JwenrHc=
 github.com/hdevalence/ed25519consensus v0.0.0-20220222234857-c00d1f31bab3 h1:aSVUgRRRtOrZOC1fYmY9gV0e9z/Iu+xNVSASWjsuyGU=
 github.com/hdevalence/ed25519consensus v0.0.0-20220222234857-c00d1f31bab3/go.mod h1:5PC6ZNPde8bBqU/ewGZig35+UIZtw9Ytxez8/q5ZyFE=
-github.com/histolabs/cosmos-sdk v0.0.0-20221229062726-dc4f810ce7dd h1:lmKlMmBFOh7Ki7sRmdaxmY/rs0fM2KL2ziWDH89E5sY=
-github.com/histolabs/cosmos-sdk v0.0.0-20221229062726-dc4f810ce7dd/go.mod h1:2Oq+pYLgUOdcv++AXR77Nv/Yiw4dckswSQN1iyScUqk=
+github.com/histolabs/cosmos-sdk v0.0.0-20221229215231-8dd3d8fb1f2b h1:zdCxFq14olW+EUVlpGGWunFTcklExUsW5gLqvUVJ7/k=
+github.com/histolabs/cosmos-sdk v0.0.0-20221229215231-8dd3d8fb1f2b/go.mod h1:2Oq+pYLgUOdcv++AXR77Nv/Yiw4dckswSQN1iyScUqk=
 github.com/histolabs/tendermint v0.0.0-20221227204023-ec49dd7d580f h1:kKbennoGXeAoinjF9jrcYF7bSJpjw14UGQEqe4TXexQ=
 github.com/histolabs/tendermint v0.0.0-20221227204023-ec49dd7d580f/go.mod h1:S0QMQWprpLDnBooMFbQYEVUGzZJaLMwOvtG7tbWoAiY=
 github.com/holiman/bloomfilter/v2 v2.0.3/go.mod h1:zpoh+gs7qcpqrHr3dB55AMiJwo0iURXE7ZOP9L9hSkA=
