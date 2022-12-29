@@ -164,7 +164,7 @@ require (
 )
 
 replace (
-	github.com/cosmos/cosmos-sdk => github.com/celestiaorg/cosmos-sdk v1.5.1-sdk-v0.46.6
+	github.com/cosmos/cosmos-sdk => github.com/histolabs/cosmos-sdk v0.0.0-20221229062726-dc4f810ce7dd
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tendermint => github.com/histolabs/tendermint v0.0.0-20221227204023-ec49dd7d580f
 )
