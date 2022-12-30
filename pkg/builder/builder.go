@@ -111,6 +111,7 @@ func (k *KeyringSigner) BuildSignedTx(builder sdkclient.TxBuilder, isSecondary b
 	sequence := k.acc.GetSequence()
 	if isSecondary {
 		sequence = k.acc.GetSecondarySequence(k.secondaryChainID)
+		builder.SetSecondaryChainID(k.secondaryChainID)
 	}
 	k.RUnlock()
 

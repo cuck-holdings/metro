@@ -6,10 +6,6 @@ import (
 )
 
 const (
-	ChainIDSeparator = "|"
-)
-
-const (
 	AccountAddressPrefix = "metro"
 	Name                 = "metro"
 	// BondDenom defines the native staking token denomination.
