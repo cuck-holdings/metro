@@ -29,7 +29,7 @@ COPY --from=build-env /go/bin/metro /usr/bin/metro
 
 COPY ./scripts/single-node.sh .
 
-EXPOSE 26657
+EXPOSE 26657 1317
 
 ENTRYPOINT [ "./single-node.sh" ]
 # NOTE: to run this image, docker run -d -p 26657:26657 ./single-node.sh {{chain_id}} {{genesis_account}}
