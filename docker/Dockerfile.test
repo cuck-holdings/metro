@@ -2,7 +2,7 @@
 # > docker build -t metro .
 # > docker run -it -p 46657:46657 -p 46656:46656 -v ~/.metro:/root/.metro -v ~/.metrocli:/root/.metrocli metro metro init
 # > docker run -it -p 46657:46657 -p 46656:46656 -v ~/.metro:/root/.metro -v ~/.metrocli:/root/.metrocli metro metro start
-FROM golang:1.19-alpine AS build-env
+FROM --platform=$BUILDPLATFORM golang:1.19-alpine AS build-env
 
 # Set up dependencies
 ENV PACKAGES curl make git libc-dev bash gcc linux-headers eudev-dev python3
@@ -18,7 +18,7 @@ RUN apk add --no-cache $PACKAGES && \
     make install
 
 # Final image
-FROM alpine:edge
+FROM --platform=$BUILDPLATFORM alpine:edge
 
 # Install ca-certificates
 RUN apk add --update ca-certificates
@@ -29,7 +29,7 @@ COPY --from=build-env /go/bin/metro /usr/bin/metro
 
 COPY ./scripts/single-node.sh .
 
-EXPOSE 26657 1317
+EXPOSE 26657 1317 9090
 
 ENTRYPOINT [ "./single-node.sh" ]
 # NOTE: to run this image, docker run -d -p 26657:26657 ./single-node.sh {{chain_id}} {{genesis_account}}
