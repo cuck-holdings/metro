@@ -1,7 +1,5 @@
 #!/bin/sh
 
-# set -x
-
 set -o errexit -o nounset
 
 SLEEP_TIMEOUT=5
@@ -16,7 +14,7 @@ KEY="validator"
 # starting ports; these increment by (node index * 10) for each node
 IP_ADDR="127.0.0.1"
 NODE_P2P_PORT=26656
-NODE_LISTEN_PORT=26658
+NODE_LISTEN_PORT=26656
 API_PORT=1317
 GRPC_PORT=9090
 NODE_RPC_PORT=26657
@@ -33,7 +31,6 @@ if [ $QTD -lt 1 ] || [ $QTD -gt 10 ]; then
 fi
 
 echo "removing old data"
-pkill -f metro
 rm -rf $HOME/.metro*
 mkdir -p "$GENTXDIR"
 echo "starting $QTD nodes"
@@ -49,39 +46,35 @@ declare -a evm_addresses=("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" "0x709979
 bootnodes=""
 
 init_func() {
-    echo "init"
+    echo "initializing node $i"
     metro init $CHAINID --chain-id $CHAINID --home "$DATA_DIR$i"
     sed -i 's/addr_book_strict = true/addr_book_strict = false/' "$DATA_DIR$i/config/config.toml"
-    # sed -i 's/seed_mode = false/seed_mode = true/' "$DATA_DIR$i/config/config.toml"
+    sed -i 's/allow_duplicate_ip = false/allow_duplicate_ip = true/' "$DATA_DIR$i/config/config.toml"
 
-    echo "adding key"
+    echo "adding key for node $i"
     metro keys add $KEY"$i" --home "$DATA_DIR$i" --keyring-backend test
 
     genesis_addresses+=("$(metro keys show "$KEY$i" -a --home "$DATA_DIR$i" --keyring-backend test)")
 
+    # just add first node as bootnode right now
     if [ "$i" -eq 1 ]; then
-        echo "bootnode"
         bootnodes="$(metro tendermint show-node-id --home "$DATA_DIR$i")@$IP_ADDR:$NODE_P2P_PORT"
+        echo "added bootnode $bootnodes" 
     fi
-    # if [ "$i" -gt 1 ]; then
-    #     bootnodes="$bootnodes,$(metro tendermint show-node-id --home "$DATA_DIR$i")@$IP_ADDR:$(($NODE_P2P_PORT+($i-1)*10))"
-    # fi
 
-    # sed -i'.bak' 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:26657"#g' "$DATA_DIR/config/config.toml"
+    # uncomment these to set block time to 1s
     # sed -i 's/timeout_commit = "1s"/timeout_commit = "1s"/g' "$DATA_DIR$i/config/config.toml"
     # sed -i 's/timeout_propose = "1s"/timeout_propose = "1s"/g' "$DATA_DIR$i/config/config.toml"
-    # sed -i 's/index_all_keys = false/index_all_keys = true/g' "$DATA_DIR$i/config/config.toml"
-    # sed -i 's/mode = "full"/mode = "validator"/g' "$DATA_DIR$i/config/config.toml"
 }
 
 add_genesis_accounts() {
     for addr in "${genesis_addresses[@]}"
     do
-        echo "adding genesis account $addr"
+        echo "adding genesis account $addr for node $i"
         metro add-genesis-account --home "$DATA_DIR$i" "$addr" $coins 
     done
 
-    echo "gentx"
+    echo "gentx for node $i"
     metro gentx "$KEY$i" 5000000000utick \
     --output-document "$GENTXDIR/gentx-$KEY$i.json" \
     --home "$DATA_DIR$i" \
@@ -92,7 +85,7 @@ add_genesis_accounts() {
 }
 
 collect_gentxs() {
-    echo "collect-gentxs $i"
+    echo "collect-gentxs for node $i"
     metro collect-gentxs --home "$DATA_DIR$i" --gentx-dir "$GENTXDIR"
     metro validate-genesis --home "$DATA_DIR$i"
 }
@@ -104,8 +97,6 @@ start_func() {
     echo "node p2p listen port:  $(( $NODE_LISTEN_PORT+$PORT_MOD ))"
     echo "node rpc port:  $(( $NODE_RPC_PORT+$PORT_MOD ))"
     echo "node api port:  $(( $API_PORT+$PORT_MOD ))"
-
-    echo $bootnodes
 
     if [ "$i" -eq 1 ]; then
         metro start --home "$DATA_DIR$i" \
